@@ -6,24 +6,33 @@ module.exports = class Soldier
     @image.onload = =>
       @ready = true
     @image.src = 'images/hero16.png'
+    @tickSum = 0
 
   MoveTo: (x,y) ->
     @order = "MOVE"
     @destX = x
     @destY = y
+    @
 
-  ShootAt: (x,y) ->
+  ShootAt: (x,y,rounds = 10) ->
     @order = "SHOOT"
     @targetX = x
     @targetY = y
+    @targetRounds = rounds
+    @
 
-  tick: (modifier) ->
+  tick: (secs) ->
+    @tickSum +=secs
     if @order is "MOVE"
-      @x=Math.min(@x+@speed*modifier, @destX) if @destX > @x
-      @x=Math.max(@x-@speed*modifier, @destX) if @destX < @x
-      @y=Math.min(@y+@speed*modifier, @destY) if @destY > @y
-      @y=Math.max(@y-@speed*modifier, @destY) if @destY < @y
-      @order = "" if Math.round(@x) is @destX and Math.round(@y) is @destY
+      @x=Math.min(@x+@speed*secs, @destX) if @destX > @x
+      @x=Math.max(@x-@speed*secs, @destX) if @destX < @x
+      @y=Math.min(@y+@speed*secs, @destY) if @destY > @y
+      @y=Math.max(@y-@speed*secs, @destY) if @destY < @y
+      @order = "" if Math.round(@x) is Math.round(@destX) and Math.round(@y) is Math.round(@destY)
     if @order is "SHOOT"
-      @shootX = @targetX + Math.random()*10-5;
-      @shootY = @targetY + Math.random()*10-5;
+      if @tickSum > 0.5
+        @shootX = @targetX + Math.random()*10-5
+        @shootY = @targetY + Math.random()*10-5
+        @targetRounds--
+        @tickSum = 0
+      @order = "" if @targetRounds is 0
